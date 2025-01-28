@@ -2,6 +2,8 @@
 TODO :
 plus de fichier en entrée
 
+A la fin viré la gestion d'erreur
+
 
 
 */

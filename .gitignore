@@ -1,0 +1,4 @@
+go.*
+*.exe
+*.webp
+/sqd
