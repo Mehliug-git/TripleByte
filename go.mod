@@ -14,4 +14,7 @@ require (
 	golang.org/x/tools v0.22.0
 )
 
-require github.com/AllenDang/w32 v0.0.0-20180428130237-ad0a36d80adc // indirect
+require (
+	github.com/AllenDang/w32 v0.0.0-20180428130237-ad0a36d80adc // indirect
+	github.com/veandco/go-sdl2 v0.4.40 // indirect
+)

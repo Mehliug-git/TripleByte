@@ -1,4 +1,6 @@
 go.*
 *.exe
 *.webp
-/sqd
+/sqd/*
+/test-sdl2/*
+GTOUTPRI.png
